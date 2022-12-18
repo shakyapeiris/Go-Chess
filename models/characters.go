@@ -1,4 +1,4 @@
-package characters
+package models
 
 type Piece struct {
 	Color        string

@@ -1,13 +1,13 @@
 package board
 
 import (
-	"chess-game/characters"
+	"chess-game/models"
 	"errors"
 	"strconv"
 	"strings"
 )
 
-var board [8][8]*characters.Piece
+var board [8][8]*models.Piece
 var CurrTurn = "W"
 
 func init() {
@@ -18,7 +18,7 @@ func init() {
 	}
 }
 
-func formatInput(mv string) (MoveType, error) {
+func formatInput(mv string) (models.MoveType, error) {
 	// Eg: N:g1 -> f3
 	mv = strings.Trim(mv, " ")
 	piece := strings.Split(mv, ":")[0]
@@ -28,21 +28,21 @@ func formatInput(mv string) (MoveType, error) {
 	to, toErr := getSquare(squares[1])
 
 	if fromErr != nil {
-		return MoveType{}, fromErr
+		return models.MoveType{}, fromErr
 	}
 
 	if toErr != nil {
-		return MoveType{}, toErr
+		return models.MoveType{}, toErr
 	}
 
-	return MoveType{
-		character: piece,
-		from:      from,
-		to:        to,
+	return models.MoveType{
+		Character: piece,
+		From:      from,
+		To:        to,
 	}, nil
 }
 
-func getSquare(sq string) (Square, error) {
+func getSquare(sq string) (models.Square, error) {
 	dictionary := make(map[string]int)
 	dictionary["a"] = 0
 	dictionary["b"] = 1
@@ -56,13 +56,13 @@ func getSquare(sq string) (Square, error) {
 	x := dictionary[string(sq[0])]
 	y, err := strconv.Atoi(string(sq[1]))
 	if err != nil {
-		return Square{0, 0}, err
+		return models.Square{0, 0}, err
 	}
 
 	if !(x >= 0 && x < 8 && y >= 0 && y < 8) {
-		return Square{0, 0}, errors.New("invalid square")
+		return models.Square{0, 0}, errors.New("invalid square")
 	}
-	return Square{uint(x), uint(y)}, nil
+	return models.Square{uint(x), uint(y)}, nil
 }
 
 func Move(mv string) error {
@@ -71,8 +71,8 @@ func Move(mv string) error {
 	if err != nil {
 		return err
 	}
-	var character = board[move.from[1]][move.from[0]]
-	if character == nil || character.Character != move.character || character.CurrPosition != move.from || character.Color != CurrTurn {
+	var character = board[move.From[1]][move.From[0]]
+	if character == nil || character.Character != move.Character || character.CurrPosition != move.From || character.Color != CurrTurn {
 		return errors.New("invalid move")
 	}
 

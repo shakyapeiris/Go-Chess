@@ -1,12 +1,12 @@
 package characters
 
-import "chess-game/board"
+import "chess-game/models"
 
 type King struct {
-	Piece
+	models.Piece
 }
 
-func (K *King) Move(target board.Square) error {
+func (K *King) Move(target models.Square) error {
 	// left
 	// left bottom
 	// left top
@@ -26,7 +26,7 @@ func (K *King) CanMove() bool {
 }
 
 // IsChecked checks whether the king is checked
-func (K *King) IsChecked(attackingSquares []board.Square) bool {
+func (K *King) IsChecked(attackingSquares []models.Square) bool {
 	for _, square := range attackingSquares {
 		if K.CurrPosition == square {
 			return true

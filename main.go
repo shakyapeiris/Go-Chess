@@ -28,6 +28,6 @@ func main() {
 			continue
 		}
 
-		board.CurrTurn = "B"
+		// board.CurrTurn = "B"
 	}
 }

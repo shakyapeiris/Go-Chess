@@ -1,15 +1,17 @@
 package characters
 
-import "chess-game/board"
+import (
+	"chess-game/models"
+)
 
 type Pawn struct {
-	Piece
+	models.Piece
 }
 
-func (P *Pawn) Move(to board.Square, board *board.Board) {
+func (P *Pawn) Move(to models.Square, board *models.Board) {
 
 }
 
-func (P *Pawn) GetAttackingSquares(board *board.Board) {
+func (P *Pawn) GetAttackingSquares(board *models.Board) {
 
 }
