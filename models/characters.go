@@ -1,7 +1,8 @@
 package models
 
-type Piece struct {
-	Color        string
-	CurrPosition [2]uint
-	Character    string
+type Piece interface {
+	Move(target Square, board *Board) error
+	GetCharacter() string
+	GetColor() string
+	GetPosition() Square
 }

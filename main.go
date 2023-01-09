@@ -6,8 +6,12 @@ import (
 )
 
 func main() {
+	// Start game
 	fmt.Println("Welcome to the chess game!")
+	board.PrintBoard()
 	for {
+
+		// Request a move from current player
 		var mv string
 		if board.CurrTurn == "W" {
 			fmt.Println("It's whites' turn:")
@@ -21,6 +25,7 @@ func main() {
 			continue
 		}
 
+		// Validate move
 		err := board.Move(mv)
 
 		if err != nil {
@@ -28,6 +33,11 @@ func main() {
 			continue
 		}
 
-		// board.CurrTurn = "B"
+		// Give chance to other player
+		if board.CurrTurn == "W" {
+			board.CurrTurn = "B"
+		} else {
+			board.CurrTurn = "W"
+		}
 	}
 }

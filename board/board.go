@@ -1,29 +1,72 @@
 package board
 
 import (
+	"chess-game/characters"
 	"chess-game/models"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
 
-var board [8][8]*models.Piece
+var board models.Board
 var CurrTurn = "W"
 
+var whitePieces = []models.Piece{
+	&characters.Rook{
+		CurrPosition: models.Square{0, 0},
+		Color:        "W",
+		Character:    "R",
+	},
+	&characters.Rook{
+		CurrPosition: models.Square{0, 7},
+		Color:        "W",
+		Character:    "R",
+	},
+}
+
+var blackPieces = []models.Piece{
+	&characters.Rook{
+		CurrPosition: models.Square{7, 7},
+		Color:        "B",
+		Character:    "R",
+	},
+	&characters.Rook{
+		CurrPosition: models.Square{7, 0},
+		Color:        "B",
+		Character:    "R",
+	},
+}
+
 func init() {
+	// Initialize board
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
 			board[i][j] = nil
 		}
 	}
+
+	for i := 0; i < len(whitePieces); i++ {
+		character := whitePieces[i]
+		board[character.GetPosition()[0]][character.GetPosition()[1]] = character
+	}
+
+	for i := 0; i < len(blackPieces); i++ {
+		character := blackPieces[i]
+		board[character.GetPosition()[0]][character.GetPosition()[1]] = character
+	}
+
 }
 
 func formatInput(mv string) (models.MoveType, error) {
 	// Eg: N:g1 -> f3
 	mv = strings.Trim(mv, " ")
-	piece := strings.Split(mv, ":")[0]
 
+	// Separate character and move
+	piece := strings.Split(mv, ":")[0]
 	squares := strings.Split(strings.Split(mv, ":")[1], "->")
+
+	// Validate move
 	from, fromErr := getSquare(squares[0])
 	to, toErr := getSquare(squares[1])
 
@@ -58,11 +101,11 @@ func getSquare(sq string) (models.Square, error) {
 	if err != nil {
 		return models.Square{0, 0}, err
 	}
-
+	y--
 	if !(x >= 0 && x < 8 && y >= 0 && y < 8) {
 		return models.Square{0, 0}, errors.New("invalid square")
 	}
-	return models.Square{uint(x), uint(y)}, nil
+	return models.Square{x, y}, nil
 }
 
 func Move(mv string) error {
@@ -72,9 +115,26 @@ func Move(mv string) error {
 		return err
 	}
 	var character = board[move.From[1]][move.From[0]]
-	if character == nil || character.Character != move.Character || character.CurrPosition != move.From || character.Color != CurrTurn {
+	var newSquare = board[move.To[1]][move.To[0]]
+
+	fmt.Printf("From: %v\nTo: %v\nCharacter: %v\n", move.From, move.To, character)
+
+	isInvalidMove := character == nil ||
+		character.GetCharacter() != move.Character ||
+		character.GetColor() != CurrTurn ||
+		newSquare != nil && newSquare.GetColor() == character.GetColor()
+
+	if isInvalidMove {
 		return errors.New("invalid move")
 	}
+
+	moveErr := character.Move(move.To, &board)
+
+	if moveErr != nil {
+		return errors.New("invalid move")
+	}
+
+	PrintBoard()
 
 	// check whether character can go to move.to
 	// if possible update temporary board
@@ -91,4 +151,17 @@ func Move(mv string) error {
 	// else ask opponent to move
 
 	return nil
+}
+
+func PrintBoard() {
+	for _, i := range board {
+		for _, j := range i {
+			if j == nil {
+				fmt.Print("-")
+			} else {
+				fmt.Print(j.GetColor() + j.GetCharacter())
+			}
+		}
+		fmt.Println()
+	}
 }
