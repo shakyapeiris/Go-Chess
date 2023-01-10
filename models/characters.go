@@ -5,4 +5,6 @@ type Piece interface {
 	GetCharacter() string
 	GetColor() string
 	GetPosition() Square
+	GetAttackingSquares(board Board) []Square
+	GetID() int
 }

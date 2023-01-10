@@ -9,13 +9,15 @@ type King struct {
 	Color        string
 	CurrPosition models.Square
 	Character    string
+	Id           int
 }
 
 func (K *King) Move(target models.Square, board *models.Board) error {
-	var possibleSquares = K.GetAttackingSquares()
+	var possibleSquares = K.GetAttackingSquares(*board)
 
 	for _, square := range possibleSquares {
 		if square[0] == target[0] && square[1] == target[1] {
+			board[K.CurrPosition[1]][K.CurrPosition[0]] = nil
 			K.CurrPosition = target
 			board[target[1]][target[0]] = K
 			return nil
@@ -36,11 +38,11 @@ func (K *King) IsChecked(attackingSquares []models.Square) bool {
 }
 
 // GetAttackingSquares get squares piece can move/other king cannot come
-func (K *King) GetAttackingSquares() []models.Square {
+func (K *King) GetAttackingSquares(_ models.Board) []models.Square {
 	var squares []models.Square
 
-	x := K.CurrPosition[1]
-	y := K.CurrPosition[0]
+	x := K.CurrPosition[0]
+	y := K.CurrPosition[1]
 
 	if x > 0 && y > 0 {
 		squares = append(squares, models.Square{x - 1, y - 1})
@@ -80,4 +82,8 @@ func (K *King) GetColor() string {
 
 func (K *King) GetCharacter() string {
 	return K.Character
+}
+
+func (K *King) GetID() int {
+	return K.Id
 }
