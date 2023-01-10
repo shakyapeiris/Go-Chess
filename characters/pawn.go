@@ -25,7 +25,14 @@ func (P *Pawn) Move(target models.Square, board *models.Board) error {
 		}
 	}
 
-	return errors.New("cannot move the piece to requested position")
+	//TODO: Enpassment
+	if P.Color == "W" && P.CurrPosition[1] == 4 {
+
+	} else if P.Color == "B" && P.CurrPosition[1] == 3 {
+
+	}
+
+	return errors.New("[illegal move]: cannot move the piece to requested position")
 }
 
 // GetAttackingSquares get squares piece can move/other king cannot come

@@ -25,7 +25,7 @@ func (K *King) Move(target models.Square, board *models.Board) error {
 		}
 	}
 
-	return errors.New("cannot move the piece to requested position")
+	return errors.New("[illegal move]: cannot move piece to the requested square")
 }
 
 // IsChecked checks whether the king is checked

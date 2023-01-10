@@ -25,7 +25,7 @@ func (R *Rook) Move(target models.Square, board *models.Board) error {
 		}
 	}
 
-	return errors.New("cannot move the piece to requested position")
+	return errors.New("[illegal move]: cannot move the piece to requested position")
 }
 
 // GetAttackingSquares get squares piece can move/other king cannot come

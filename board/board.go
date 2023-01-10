@@ -18,6 +18,11 @@ var whitePieces = []models.Piece{
 		Color:        "W",
 		Character:    "K",
 	},
+	&characters.Queen{
+		CurrPosition: models.Square{4, 0},
+		Color:        "W",
+		Character:    "Q",
+	},
 	&characters.Rook{
 		CurrPosition: models.Square{0, 0},
 		Color:        "W",
@@ -28,6 +33,26 @@ var whitePieces = []models.Piece{
 		Color:        "W",
 		Character:    "R",
 	},
+	&characters.Bishop{
+		CurrPosition: models.Square{2, 0},
+		Color:        "W",
+		Character:    "B",
+	},
+	&characters.Bishop{
+		CurrPosition: models.Square{5, 0},
+		Color:        "W",
+		Character:    "B",
+	},
+	&characters.Knight{
+		CurrPosition: models.Square{1, 0},
+		Color:        "W",
+		Character:    "N",
+	},
+	&characters.Knight{
+		CurrPosition: models.Square{6, 0},
+		Color:        "W",
+		Character:    "N",
+	},
 }
 
 var blackPieces = []models.Piece{
@@ -35,6 +60,11 @@ var blackPieces = []models.Piece{
 		CurrPosition: models.Square{3, 7},
 		Color:        "B",
 		Character:    "K",
+	},
+	&characters.Queen{
+		CurrPosition: models.Square{4, 7},
+		Color:        "B",
+		Character:    "Q",
 	},
 	&characters.Rook{
 		CurrPosition: models.Square{7, 7},
@@ -45,6 +75,26 @@ var blackPieces = []models.Piece{
 		CurrPosition: models.Square{0, 7},
 		Color:        "B",
 		Character:    "R",
+	},
+	&characters.Bishop{
+		CurrPosition: models.Square{2, 7},
+		Color:        "B",
+		Character:    "B",
+	},
+	&characters.Bishop{
+		CurrPosition: models.Square{5, 7},
+		Color:        "B",
+		Character:    "B",
+	},
+	&characters.Knight{
+		CurrPosition: models.Square{1, 7},
+		Color:        "B",
+		Character:    "N",
+	},
+	&characters.Knight{
+		CurrPosition: models.Square{6, 7},
+		Color:        "B",
+		Character:    "N",
 	},
 }
 
@@ -162,7 +212,7 @@ func Move(mv string) error {
 
 	moveErr := character.Move(move.To, &tempBoard)
 	if moveErr != nil {
-		return errors.New("invalid move")
+		return moveErr
 	}
 
 	if CurrTurn == "B" {
@@ -171,7 +221,7 @@ func Move(mv string) error {
 			for _, sq := range piece.GetAttackingSquares(tempBoard) {
 				if blackKing.GetPosition()[0] == sq[0] && blackKing.GetPosition()[1] == sq[1] {
 					character.Move(move.From, &tempBoard)
-					return errors.New("illegal move")
+					return errors.New("[illegal move]: king is checked after the move")
 				}
 			}
 		}
@@ -181,7 +231,7 @@ func Move(mv string) error {
 			for _, sq := range piece.GetAttackingSquares(tempBoard) {
 				if whiteKing.GetPosition()[0] == sq[0] && whiteKing.GetPosition()[1] == sq[1] {
 					character.Move(move.From, &tempBoard)
-					return errors.New("illegal move")
+					return errors.New("[illegal move]: king is checked after the move")
 				}
 			}
 		}
@@ -191,19 +241,7 @@ func Move(mv string) error {
 
 	PrintBoard()
 
-	// check whether character can go to move.to
-	// if possible update temporary board
-	// check whether king is checked
-
-	// if move is valid, make the move in the real board
-	// calculate attacked squares from moved player
-	// calculate squares opponents king can go to
-	// if 0, and king is not checked, draw
-	// if 0 and king is checked, win
-
-	// else add board to history
-	// if board is consecutively repeated three times, draw
-	// else ask opponent to move
+	//TODO: Check for Check Mate or stalemate
 
 	return nil
 }
@@ -212,9 +250,9 @@ func PrintBoard() {
 	for _, i := range board {
 		for _, j := range i {
 			if j == nil {
-				fmt.Print("-")
+				fmt.Print(" -- ")
 			} else {
-				fmt.Print(j.GetColor() + j.GetCharacter())
+				fmt.Print(" " + j.GetColor() + j.GetCharacter() + " ")
 			}
 		}
 		fmt.Println()
