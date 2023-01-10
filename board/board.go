@@ -17,19 +17,16 @@ var whitePieces = []models.Piece{
 		CurrPosition: models.Square{3, 0},
 		Color:        "W",
 		Character:    "K",
-		Id:           0,
 	},
 	&characters.Rook{
 		CurrPosition: models.Square{0, 0},
 		Color:        "W",
 		Character:    "R",
-		Id:           1,
 	},
 	&characters.Rook{
 		CurrPosition: models.Square{7, 0},
 		Color:        "W",
 		Character:    "R",
-		Id:           2,
 	},
 }
 
@@ -38,38 +35,53 @@ var blackPieces = []models.Piece{
 		CurrPosition: models.Square{3, 7},
 		Color:        "B",
 		Character:    "K",
-		Id:           3,
 	},
 	&characters.Rook{
 		CurrPosition: models.Square{7, 7},
 		Color:        "B",
 		Character:    "R",
-		Id:           4,
 	},
 	&characters.Rook{
 		CurrPosition: models.Square{0, 7},
 		Color:        "B",
 		Character:    "R",
-		Id:           5,
 	},
 }
 
 func init() {
 	// Initialize board
 	for i := 0; i < 8; i++ {
+		whitePieces = append(whitePieces, &characters.Pawn{
+			CurrPosition: models.Square{i, 1},
+			Color:        "W",
+			Character:    "P",
+		})
+	}
+	for i := 0; i < 8; i++ {
+		blackPieces = append(blackPieces, &characters.Pawn{
+			CurrPosition: models.Square{i, 6},
+			Color:        "B",
+			Character:    "P",
+		})
+	}
+	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
 			board[i][j] = nil
 		}
 	}
-
+	var id = 0
 	for i := 0; i < len(whitePieces); i++ {
 		character := whitePieces[i]
+		character.SetID(id)
 		board[character.GetPosition()[1]][character.GetPosition()[0]] = character
+		id++
 	}
 
 	for i := 0; i < len(blackPieces); i++ {
 		character := blackPieces[i]
+		character.SetID(id)
 		board[character.GetPosition()[1]][character.GetPosition()[0]] = character
+		id++
 	}
 
 }
@@ -174,7 +186,7 @@ func Move(mv string) error {
 			}
 		}
 	}
-
+	character.SetPrev(&move.From)
 	board = tempBoard
 
 	PrintBoard()

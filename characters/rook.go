@@ -10,6 +10,7 @@ type Rook struct {
 	CurrPosition models.Square
 	Character    string
 	Id           int
+	Prev         *models.Square
 }
 
 func (R *Rook) Move(target models.Square, board *models.Board) error {
@@ -80,4 +81,16 @@ func (R *Rook) GetCharacter() string {
 
 func (R *Rook) GetID() int {
 	return R.Id
+}
+
+func (R *Rook) SetID(id int) {
+	R.Id = id
+}
+
+func (R *Rook) GetPrev() models.Square {
+	return *R.Prev
+}
+
+func (R *Rook) SetPrev(prev *models.Square) {
+	R.Prev = prev
 }

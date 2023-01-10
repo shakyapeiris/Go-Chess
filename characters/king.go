@@ -10,6 +10,7 @@ type King struct {
 	CurrPosition models.Square
 	Character    string
 	Id           int
+	Prev         *models.Square
 }
 
 func (K *King) Move(target models.Square, board *models.Board) error {
@@ -86,4 +87,16 @@ func (K *King) GetCharacter() string {
 
 func (K *King) GetID() int {
 	return K.Id
+}
+
+func (K *King) SetID(id int) {
+	K.Id = id
+}
+
+func (K *King) GetPrev() models.Square {
+	return *K.Prev
+}
+
+func (K *King) SetPrev(prev *models.Square) {
+	K.Prev = prev
 }

@@ -7,4 +7,7 @@ type Piece interface {
 	GetPosition() Square
 	GetAttackingSquares(board Board) []Square
 	GetID() int
+	SetID(id int)
+	GetPrev() Square
+	SetPrev(sq *Square)
 }
