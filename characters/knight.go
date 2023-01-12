@@ -31,7 +31,9 @@ func (N *Knight) Move(target models.Square, board *models.Board) error {
 // GetAttackingSquares get squares piece can move/other king cannot come
 func (N *Knight) GetAttackingSquares(board models.Board) []models.Square {
 	var squares []models.Square
-	if board[N.CurrPosition[1]][N.CurrPosition[0]].GetID() != N.Id {
+	if board[N.CurrPosition[1]][N.CurrPosition[0]] == nil ||
+		(board[N.CurrPosition[1]][N.CurrPosition[0]] != nil &&
+			board[N.CurrPosition[1]][N.CurrPosition[0]].GetID() != N.Id) {
 		return []models.Square{}
 	}
 

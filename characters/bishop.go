@@ -31,7 +31,9 @@ func (B *Bishop) Move(target models.Square, board *models.Board) error {
 // GetAttackingSquares get squares piece can move/other king cannot come
 func (B *Bishop) GetAttackingSquares(board models.Board) []models.Square {
 	var squares []models.Square
-	if board[B.CurrPosition[1]][B.CurrPosition[0]].GetID() != B.Id {
+	if board[B.CurrPosition[1]][B.CurrPosition[0]] == nil ||
+		(board[B.CurrPosition[1]][B.CurrPosition[0]] != nil &&
+			board[B.CurrPosition[1]][B.CurrPosition[0]].GetID() != B.Id) {
 		return []models.Square{}
 	}
 
