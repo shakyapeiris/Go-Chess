@@ -1,5 +1,5 @@
 # Go-Chess
-A chess game developed using GoLang which you can play as a CLI application
+A fully functioning chess game developed using GoLang which you can play as a CLI application
 
 ## Input format
 Character:From->To <br />
