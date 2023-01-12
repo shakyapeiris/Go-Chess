@@ -422,8 +422,6 @@ func Move(mv string) error {
 
 	PrintBoard()
 
-	//TODO: Check for Check Mate or stalemate
-
 	return nil
 }
 
