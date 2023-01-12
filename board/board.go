@@ -163,11 +163,21 @@ func Move(mv string) (error, string) {
 
 	tempBoard := board
 
+	isEnpassment := character.GetCharacter() == "P" &&
+		(move.From[0] != move.To[0]) &&
+		board[move.To[1]][move.To[0]] == nil
+
 	moveErr := character.Move(move.To, &tempBoard)
 	if moveErr != nil {
 		return moveErr, ""
 	}
 
+	if isEnpassment {
+		fmt.Println("Enpassing...")
+		fmt.Println(tempBoard[move.From[1]][move.To[0]])
+		tempBoard[move.From[1]][move.To[0]] = nil
+	}
+	fmt.Println("Just testing..")
 	var nW, nB []models.Piece
 	nW = copyCharacters(whitePieces)
 	nB = copyCharacters(blackPieces)
@@ -185,13 +195,13 @@ func Move(mv string) (error, string) {
 
 	// new instances of pieces
 	for _, piece := range nW {
-		if tempBoard[piece.GetPosition()[1]][piece.GetPosition()[0]].GetID() == piece.GetID() {
+		if tempBoard[piece.GetPosition()[1]][piece.GetPosition()[0]] != nil && tempBoard[piece.GetPosition()[1]][piece.GetPosition()[0]].GetID() == piece.GetID() {
 			tB[piece.GetPosition()[1]][piece.GetPosition()[0]] = piece
 		}
 	}
 
 	for _, piece := range nB {
-		if tempBoard[piece.GetPosition()[1]][piece.GetPosition()[0]].GetID() == piece.GetID() {
+		if tempBoard[piece.GetPosition()[1]][piece.GetPosition()[0]] != nil && tempBoard[piece.GetPosition()[1]][piece.GetPosition()[0]].GetID() == piece.GetID() {
 			tB[piece.GetPosition()[1]][piece.GetPosition()[0]] = piece
 		}
 	}

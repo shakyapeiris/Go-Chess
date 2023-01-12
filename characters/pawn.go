@@ -3,6 +3,7 @@ package characters
 import (
 	"chess-game/models"
 	"errors"
+	"fmt"
 )
 
 type Pawn struct {
@@ -38,7 +39,10 @@ func (P *Pawn) Move(target models.Square, board *models.Board) error {
 // GetAttackingSquares get squares piece can move/other king cannot come
 func (P *Pawn) GetAttackingSquares(board models.Board) []models.Square {
 	var squares []models.Square
-	if board[P.CurrPosition[1]][P.CurrPosition[0]].GetID() != P.Id {
+
+	if board[P.CurrPosition[1]][P.CurrPosition[0]] == nil ||
+		(board[P.CurrPosition[1]][P.CurrPosition[0]] != nil &&
+			board[P.CurrPosition[1]][P.CurrPosition[0]].GetID() != P.Id) {
 		return []models.Square{}
 	}
 
@@ -60,6 +64,21 @@ func (P *Pawn) GetAttackingSquares(board models.Board) []models.Square {
 		if P.Prev == nil && board[y+2][x] == nil {
 			squares = append(squares, models.Square{x, y + 2})
 		}
+
+		if y == 4 && x+1 < 8 &&
+			board[y][x+1] != nil &&
+			board[y][x+1].GetCharacter() == "P" &&
+			board[y][x+1].GetPrev() != nil &&
+			board[y][x+1].GetPrev()[1] == 6 {
+			squares = append(squares, models.Square{x + 1, y + 1})
+		}
+		if y == 4 && x-1 >= 0 &&
+			board[y][x-1] != nil &&
+			board[y][x-1].GetCharacter() == "P" &&
+			board[y][x-1].GetPrev() != nil &&
+			board[y][x-1].GetPrev()[1] == 6 {
+			squares = append(squares, models.Square{x - 1, y + 1})
+		}
 	} else {
 		if y-1 >= 0 && board[y-1][x] == nil {
 			squares = append(squares, models.Square{x, y - 1})
@@ -76,8 +95,24 @@ func (P *Pawn) GetAttackingSquares(board models.Board) []models.Square {
 		if P.Prev == nil && board[y-2][x] == nil {
 			squares = append(squares, models.Square{x, y - 2})
 		}
-	}
 
+		if y == 3 && x+1 < 8 &&
+			board[y][x+1] != nil &&
+			board[y][x+1].GetCharacter() == "P" &&
+			board[y][x+1].GetPrev() != nil &&
+			board[y][x+1].GetPrev()[1] == 1 {
+			squares = append(squares, models.Square{x + 1, y - 1})
+		}
+		if y == 3 &&
+			x-1 >= 0 &&
+			board[y][x-1] != nil &&
+			board[y][x-1].GetCharacter() == "P" &&
+			board[y][x-1].GetPrev() != nil &&
+			board[y][x-1].GetPrev()[1] == 1 {
+			squares = append(squares, models.Square{x - 1, y - 1})
+		}
+	}
+	fmt.Println(squares)
 	return squares
 }
 
