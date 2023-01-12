@@ -98,6 +98,173 @@ var blackPieces = []models.Piece{
 	},
 }
 
+func init() {
+	// Initialize board
+	for i := 0; i < 8; i++ {
+		whitePieces = append(whitePieces, &characters.Pawn{
+			CurrPosition: models.Square{i, 1},
+			Color:        "W",
+			Character:    "P",
+		})
+	}
+	for i := 0; i < 8; i++ {
+		blackPieces = append(blackPieces, &characters.Pawn{
+			CurrPosition: models.Square{i, 6},
+			Color:        "B",
+			Character:    "P",
+		})
+	}
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			board[i][j] = nil
+		}
+	}
+	var id = 0
+	for i := 0; i < len(whitePieces); i++ {
+		character := whitePieces[i]
+		character.SetID(id)
+		board[character.GetPosition()[1]][character.GetPosition()[0]] = character
+		id++
+	}
+
+	for i := 0; i < len(blackPieces); i++ {
+		character := blackPieces[i]
+		character.SetID(id)
+		board[character.GetPosition()[1]][character.GetPosition()[0]] = character
+		id++
+	}
+
+}
+
+// Move : React to user inputs
+func Move(mv string) error {
+	move, err := formatInput(mv)
+
+	if err != nil {
+		return err
+	}
+	var character = board[move.From[1]][move.From[0]]
+	var newSquare = board[move.To[1]][move.To[0]]
+	currPrev := character.GetPrev()
+
+	fmt.Printf("From: %v\nTo: %v\nCharacter: %v\n", move.From, move.To, character)
+
+	isInvalidMove := character == nil ||
+		character.GetCharacter() != move.Character ||
+		character.GetColor() != CurrTurn ||
+		(newSquare != nil &&
+			(newSquare.GetColor() == character.GetColor() ||
+				newSquare.GetCharacter() == "K"))
+
+	if isInvalidMove {
+		return errors.New("invalid move")
+	}
+
+	tempBoard := board
+
+	moveErr := character.Move(move.To, &tempBoard)
+	if moveErr != nil {
+		return moveErr
+	}
+
+	var nW, nB []models.Piece
+	nW = copyCharacters(whitePieces)
+	nB = copyCharacters(blackPieces)
+
+	whiteKing := nW[0]
+	blackKing := nB[0]
+
+	var tB models.Board //new board instance
+
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			tB[i][j] = nil
+		}
+	}
+
+	// new instances of pieces
+	for _, piece := range nW {
+		if tempBoard[piece.GetPosition()[1]][piece.GetPosition()[0]].GetID() == piece.GetID() {
+			tB[piece.GetPosition()[1]][piece.GetPosition()[0]] = piece
+		}
+	}
+
+	for _, piece := range nB {
+		if tempBoard[piece.GetPosition()[1]][piece.GetPosition()[0]].GetID() == piece.GetID() {
+			tB[piece.GetPosition()[1]][piece.GetPosition()[0]] = piece
+		}
+	}
+
+	if CurrTurn == "B" {
+		// check illegal move
+		isChecked := isKingChecked(nW, blackKing, tB)
+		if isChecked {
+			character.HardMove(move.From)
+			character.SetPrev(currPrev)
+			return errors.New("[illegal move]: king is checked after the move")
+		}
+
+		// Update previousSquare
+		character.SetPrev(&move.From)
+
+		// check for checkmates or stalemates
+		isOpponentKingChecked := isKingChecked(nB, whiteKing, tB)
+		canOppMove := canOpponentMakeMoves(nW, nB, tB)
+
+		if isOpponentKingChecked {
+			fmt.Println("Opponents king is checked...")
+		}
+		if !canOppMove {
+			fmt.Println("Opponent cannot move")
+		}
+		if isOpponentKingChecked && !canOppMove {
+			fmt.Println("Check Mate!")
+			return nil
+		}
+		if !isOpponentKingChecked && !canOppMove {
+			fmt.Println("Stale Mate!")
+			return nil
+		}
+	} else {
+		// check illegal move
+		isChecked := isKingChecked(nB, whiteKing, tB)
+		if isChecked {
+			character.HardMove(move.From)
+			character.SetPrev(currPrev)
+			return errors.New("[illegal move]: king is checked after the move")
+		}
+
+		// Update previousSquare
+		character.SetPrev(&move.From)
+
+		// check for checkmates or stalemates
+		isOpponentKingChecked := isKingChecked(nW, blackKing, tB)
+		canOppMove := canOpponentMakeMoves(nB, nW, tB)
+		if isOpponentKingChecked {
+			fmt.Println("Opponents king is checked...")
+		}
+		if !canOppMove {
+			fmt.Println("Opponent cannot move")
+		}
+		if isOpponentKingChecked && !canOppMove {
+			fmt.Println("Check Mate!")
+			return nil
+		}
+		if !isOpponentKingChecked && !canOppMove {
+			fmt.Println("Stale Mate!")
+			return nil
+		}
+	}
+
+	// update board
+	board = tempBoard
+
+	PrintBoard()
+
+	return nil
+}
+
+// isKingChecked: Check whether king is checked
 func isKingChecked(pieces []models.Piece, king models.Piece, board models.Board) bool {
 	fmt.Printf("[isKingChecked]: Triggered for %v\n", king)
 	for _, piece := range pieces {
@@ -113,6 +280,7 @@ func isKingChecked(pieces []models.Piece, king models.Piece, board models.Board)
 	return false
 }
 
+// canOpponentMakeMoves: Check whether opponent has any possible legal moves
 func canOpponentMakeMoves(oppPieces []models.Piece, playerPieces []models.Piece, board models.Board) bool {
 	for _, piece := range oppPieces {
 		fmt.Printf("[canOpponentMakeMoves]: %v can move to\n", piece)
@@ -157,6 +325,7 @@ func canOpponentMakeMoves(oppPieces []models.Piece, playerPieces []models.Piece,
 	return false
 }
 
+// copyCharacters: Deep copy character objects
 func copyCharacters(characterArr []models.Piece) []models.Piece {
 	var nA []models.Piece
 	for _, piece := range characterArr {
@@ -223,44 +392,7 @@ func copyCharacters(characterArr []models.Piece) []models.Piece {
 	return nA
 }
 
-func init() {
-	// Initialize board
-	for i := 0; i < 8; i++ {
-		whitePieces = append(whitePieces, &characters.Pawn{
-			CurrPosition: models.Square{i, 1},
-			Color:        "W",
-			Character:    "P",
-		})
-	}
-	for i := 0; i < 8; i++ {
-		blackPieces = append(blackPieces, &characters.Pawn{
-			CurrPosition: models.Square{i, 6},
-			Color:        "B",
-			Character:    "P",
-		})
-	}
-	for i := 0; i < 8; i++ {
-		for j := 0; j < 8; j++ {
-			board[i][j] = nil
-		}
-	}
-	var id = 0
-	for i := 0; i < len(whitePieces); i++ {
-		character := whitePieces[i]
-		character.SetID(id)
-		board[character.GetPosition()[1]][character.GetPosition()[0]] = character
-		id++
-	}
-
-	for i := 0; i < len(blackPieces); i++ {
-		character := blackPieces[i]
-		character.SetID(id)
-		board[character.GetPosition()[1]][character.GetPosition()[0]] = character
-		id++
-	}
-
-}
-
+// formatInput: Format move input into required format
 func formatInput(mv string) (models.MoveType, error) {
 	// Eg: N:g1 -> f3
 	mv = strings.Trim(mv, " ")
@@ -288,6 +420,8 @@ func formatInput(mv string) (models.MoveType, error) {
 	}, nil
 }
 
+// getSquare: Convert square to coordinates in the board
+// i.e. a6 -> {0, 5}
 func getSquare(sq string) (models.Square, error) {
 	dictionary := make(map[string]int)
 	dictionary["h"] = 0
@@ -311,120 +445,7 @@ func getSquare(sq string) (models.Square, error) {
 	return models.Square{x, y}, nil
 }
 
-func Move(mv string) error {
-	move, err := formatInput(mv)
-
-	if err != nil {
-		return err
-	}
-	var character = board[move.From[1]][move.From[0]]
-	var newSquare = board[move.To[1]][move.To[0]]
-	currPrev := character.GetPrev()
-
-	fmt.Printf("From: %v\nTo: %v\nCharacter: %v\n", move.From, move.To, character)
-
-	isInvalidMove := character == nil ||
-		character.GetCharacter() != move.Character ||
-		character.GetColor() != CurrTurn ||
-		(newSquare != nil &&
-			(newSquare.GetColor() == character.GetColor() ||
-				newSquare.GetCharacter() == "K"))
-
-	if isInvalidMove {
-		return errors.New("invalid move")
-	}
-
-	tempBoard := board
-
-	moveErr := character.Move(move.To, &tempBoard)
-	if moveErr != nil {
-		return moveErr
-	}
-
-	var nW, nB []models.Piece
-	nW = copyCharacters(whitePieces)
-	nB = copyCharacters(blackPieces)
-
-	whiteKing := nW[0]
-	blackKing := nB[0]
-
-	var tB models.Board
-
-	for i := 0; i < 8; i++ {
-		for j := 0; j < 8; j++ {
-			tB[i][j] = nil
-		}
-	}
-
-	for _, piece := range nW {
-		if tempBoard[piece.GetPosition()[1]][piece.GetPosition()[0]].GetID() == piece.GetID() {
-			tB[piece.GetPosition()[1]][piece.GetPosition()[0]] = piece
-		}
-	}
-
-	for _, piece := range nB {
-		if tempBoard[piece.GetPosition()[1]][piece.GetPosition()[0]].GetID() == piece.GetID() {
-			tB[piece.GetPosition()[1]][piece.GetPosition()[0]] = piece
-		}
-	}
-
-	if CurrTurn == "B" {
-		isChecked := isKingChecked(nW, blackKing, tB)
-		if isChecked {
-			character.HardMove(move.From)
-			character.SetPrev(currPrev)
-			return errors.New("[illegal move]: king is checked after the move")
-		}
-		character.SetPrev(&move.From)
-		isOpponentKingChecked := isKingChecked(nB, whiteKing, tB)
-		canOppMove := canOpponentMakeMoves(nW, nB, tB)
-		if isOpponentKingChecked {
-			fmt.Println("Opponents king is checked...")
-		}
-		if !canOppMove {
-			fmt.Println("Opponent cannot move")
-		}
-		if isOpponentKingChecked && !canOppMove {
-			fmt.Println("Check Mate!")
-			return nil
-		}
-		if !isOpponentKingChecked && !canOppMove {
-			fmt.Println("Stale Mate!")
-			return nil
-		}
-	} else {
-		isChecked := isKingChecked(nB, whiteKing, tB)
-		if isChecked {
-			character.HardMove(move.From)
-			character.SetPrev(currPrev)
-			return errors.New("[illegal move]: king is checked after the move")
-		}
-		character.SetPrev(&move.From)
-		isOpponentKingChecked := isKingChecked(nW, blackKing, tB)
-		canOppMove := canOpponentMakeMoves(nB, nW, tB)
-		if isOpponentKingChecked {
-			fmt.Println("Opponents king is checked...")
-		}
-		if !canOppMove {
-			fmt.Println("Opponent cannot move")
-		}
-		if isOpponentKingChecked && !canOppMove {
-			fmt.Println("Check Mate!")
-			return nil
-		}
-		if !isOpponentKingChecked && !canOppMove {
-			fmt.Println("Stale Mate!")
-			return nil
-		}
-	}
-
-	board = tempBoard
-
-	PrintBoard()
-
-	return nil
-}
-
+// PrintBoard : Print board array in to the console
 func PrintBoard() {
 	for _, i := range board {
 		for _, j := range i {
