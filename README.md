@@ -21,4 +21,4 @@ i.e. `N:a3->b5` (Move knight in a3 square to b5)
  - [x] Stale mate
  - [ ] Repetition draw
  - [ ] Dead draw
-
+ - [ ] Setup a log file
