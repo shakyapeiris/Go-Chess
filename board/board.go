@@ -261,7 +261,7 @@ func Move(mv string) (error, string) {
 	board = tempBoard
 	history = append(history, mv)
 
-	if len(history) == 6 && history[len(history)-1] == history[len(history)-5] && history[len(history)-4] == history[len(history)-6] {
+	if len(history) >= 6 && history[len(history)-1] == history[len(history)-5] && history[len(history)-4] == history[len(history)-6] {
 		fmt.Println("Repetition Draw")
 		return nil, "End"
 	}
