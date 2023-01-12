@@ -98,6 +98,131 @@ var blackPieces = []models.Piece{
 	},
 }
 
+func isKingChecked(pieces []models.Piece, king models.Piece, board models.Board) bool {
+	fmt.Printf("[isKingChecked]: Triggered for %v\n", king)
+	for _, piece := range pieces {
+		fmt.Printf("[isKingChecked]: Checking for %v\n", piece)
+		for _, sq := range piece.GetAttackingSquares(board) {
+			fmt.Printf("[isKingChecked]: Comparing %v\n", sq)
+			if king.GetPosition()[0] == sq[0] && king.GetPosition()[1] == sq[1] {
+				fmt.Printf("[isKingChecked]: King is checked by %v\n", piece)
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func canOpponentMakeMoves(oppPieces []models.Piece, playerPieces []models.Piece, board models.Board) bool {
+	for _, piece := range oppPieces {
+		fmt.Printf("[canOpponentMakeMoves]: %v can move to\n", piece)
+		fmt.Println(piece.GetAttackingSquares(board))
+		for _, sq := range piece.GetAttackingSquares(board) {
+			newSquare := board[sq[1]][sq[0]]
+			fmt.Printf("[canOpponentMakeMoves]: %v:%v->%v\n", piece.GetCharacter(), piece.GetPosition(), sq)
+			if newSquare == nil ||
+				(newSquare != nil &&
+					newSquare.GetColor() != piece.GetColor() &&
+					newSquare.GetCharacter() != "K") {
+				fmt.Println("[canOpponentMakeMoves]: Checking a valid move")
+				tB := board
+				curr := piece.GetPosition()
+				currPrev := piece.GetPrev()
+
+				fmt.Println("[canOpponentMakeMoves]: Moving piece...")
+				x := piece.Move(sq, &tB)
+
+				if x != nil {
+					fmt.Println(x)
+				}
+
+				fmt.Println("[canOpponentMakeMoves]: Update state...")
+				piece.SetPrev(&curr)
+
+				fmt.Println("[canOpponentMakeMoves]: Checking for checks")
+				isChecked := isKingChecked(playerPieces, oppPieces[0], tB)
+
+				if !isChecked {
+					fmt.Printf("%v:%v->%v is possible\n", piece.GetCharacter(), curr, sq)
+					return true
+				}
+
+				fmt.Printf("[canOpponentMakeMoves]: Reverting to %v curr\n", curr)
+				piece.HardMove(curr)
+				piece.SetPrev(currPrev)
+				fmt.Println(piece)
+			}
+		}
+	}
+	return false
+}
+
+func copyCharacters(characterArr []models.Piece) []models.Piece {
+	var nA []models.Piece
+	for _, piece := range characterArr {
+		var nP models.Piece
+		switch piece.GetCharacter() {
+		case "K":
+			nP = &characters.King{
+				CurrPosition: piece.GetPosition(),
+				Color:        piece.GetColor(),
+				Prev:         piece.GetPrev(),
+				Character:    piece.GetCharacter(),
+				Id:           piece.GetID(),
+			}
+			break
+		case "Q":
+			nP = &characters.Queen{
+				CurrPosition: piece.GetPosition(),
+				Color:        piece.GetColor(),
+				Prev:         piece.GetPrev(),
+				Character:    piece.GetCharacter(),
+				Id:           piece.GetID(),
+			}
+			break
+		case "R":
+			nP = &characters.Rook{
+				CurrPosition: piece.GetPosition(),
+				Color:        piece.GetColor(),
+				Prev:         piece.GetPrev(),
+				Character:    piece.GetCharacter(),
+				Id:           piece.GetID(),
+			}
+			break
+		case "B":
+			nP = &characters.Bishop{
+				CurrPosition: piece.GetPosition(),
+				Color:        piece.GetColor(),
+				Prev:         piece.GetPrev(),
+				Character:    piece.GetCharacter(),
+				Id:           piece.GetID(),
+			}
+			break
+		case "N":
+			nP = &characters.Knight{
+				CurrPosition: piece.GetPosition(),
+				Color:        piece.GetColor(),
+				Prev:         piece.GetPrev(),
+				Character:    piece.GetCharacter(),
+				Id:           piece.GetID(),
+			}
+			break
+		case "P":
+			nP = &characters.Pawn{
+				CurrPosition: piece.GetPosition(),
+				Color:        piece.GetColor(),
+				Prev:         piece.GetPrev(),
+				Character:    piece.GetCharacter(),
+				Id:           piece.GetID(),
+			}
+			break
+		}
+		nA = append(nA, nP)
+	}
+
+	return nA
+}
+
 func init() {
 	// Initialize board
 	for i := 0; i < 8; i++ {
@@ -194,6 +319,7 @@ func Move(mv string) error {
 	}
 	var character = board[move.From[1]][move.From[0]]
 	var newSquare = board[move.To[1]][move.To[0]]
+	currPrev := character.GetPrev()
 
 	fmt.Printf("From: %v\nTo: %v\nCharacter: %v\n", move.From, move.To, character)
 
@@ -215,28 +341,83 @@ func Move(mv string) error {
 		return moveErr
 	}
 
-	if CurrTurn == "B" {
-		blackKing := blackPieces[0]
-		for _, piece := range whitePieces {
-			for _, sq := range piece.GetAttackingSquares(tempBoard) {
-				if blackKing.GetPosition()[0] == sq[0] && blackKing.GetPosition()[1] == sq[1] {
-					character.Move(move.From, &tempBoard)
-					return errors.New("[illegal move]: king is checked after the move")
-				}
-			}
-		}
-	} else {
-		whiteKing := whitePieces[0]
-		for _, piece := range blackPieces {
-			for _, sq := range piece.GetAttackingSquares(tempBoard) {
-				if whiteKing.GetPosition()[0] == sq[0] && whiteKing.GetPosition()[1] == sq[1] {
-					character.Move(move.From, &tempBoard)
-					return errors.New("[illegal move]: king is checked after the move")
-				}
-			}
+	var nW, nB []models.Piece
+	nW = copyCharacters(whitePieces)
+	nB = copyCharacters(blackPieces)
+
+	whiteKing := nW[0]
+	blackKing := nB[0]
+
+	var tB models.Board
+
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			tB[i][j] = nil
 		}
 	}
-	character.SetPrev(&move.From)
+
+	for _, piece := range nW {
+		if tempBoard[piece.GetPosition()[1]][piece.GetPosition()[0]].GetID() == piece.GetID() {
+			tB[piece.GetPosition()[1]][piece.GetPosition()[0]] = piece
+		}
+	}
+
+	for _, piece := range nB {
+		if tempBoard[piece.GetPosition()[1]][piece.GetPosition()[0]].GetID() == piece.GetID() {
+			tB[piece.GetPosition()[1]][piece.GetPosition()[0]] = piece
+		}
+	}
+
+	if CurrTurn == "B" {
+		isChecked := isKingChecked(nW, blackKing, tB)
+		if isChecked {
+			character.HardMove(move.From)
+			character.SetPrev(currPrev)
+			return errors.New("[illegal move]: king is checked after the move")
+		}
+		character.SetPrev(&move.From)
+		isOpponentKingChecked := isKingChecked(nB, whiteKing, tB)
+		canOppMove := canOpponentMakeMoves(nW, nB, tB)
+		if isOpponentKingChecked {
+			fmt.Println("Opponents king is checked...")
+		}
+		if !canOppMove {
+			fmt.Println("Opponent cannot move")
+		}
+		if isOpponentKingChecked && !canOppMove {
+			fmt.Println("Check Mate!")
+			return nil
+		}
+		if !isOpponentKingChecked && !canOppMove {
+			fmt.Println("Stale Mate!")
+			return nil
+		}
+	} else {
+		isChecked := isKingChecked(nB, whiteKing, tB)
+		if isChecked {
+			character.HardMove(move.From)
+			character.SetPrev(currPrev)
+			return errors.New("[illegal move]: king is checked after the move")
+		}
+		character.SetPrev(&move.From)
+		isOpponentKingChecked := isKingChecked(nW, blackKing, tB)
+		canOppMove := canOpponentMakeMoves(nB, nW, tB)
+		if isOpponentKingChecked {
+			fmt.Println("Opponents king is checked...")
+		}
+		if !canOppMove {
+			fmt.Println("Opponent cannot move")
+		}
+		if isOpponentKingChecked && !canOppMove {
+			fmt.Println("Check Mate!")
+			return nil
+		}
+		if !isOpponentKingChecked && !canOppMove {
+			fmt.Println("Stale Mate!")
+			return nil
+		}
+	}
+
 	board = tempBoard
 
 	PrintBoard()

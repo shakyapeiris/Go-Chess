@@ -3,6 +3,7 @@ package characters
 import (
 	"chess-game/models"
 	"errors"
+	"fmt"
 )
 
 type Queen struct {
@@ -106,6 +107,7 @@ func (Q *Queen) GetAttackingSquares(board models.Board) []models.Square {
 		tX++
 		tY++
 	}
+	fmt.Println(squares)
 	return squares
 }
 
@@ -129,10 +131,14 @@ func (Q *Queen) SetID(id int) {
 	Q.Id = id
 }
 
-func (Q *Queen) GetPrev() models.Square {
-	return *Q.Prev
+func (Q *Queen) GetPrev() *models.Square {
+	return Q.Prev
 }
 
 func (Q *Queen) SetPrev(prev *models.Square) {
 	Q.Prev = prev
+}
+
+func (Q *Queen) HardMove(sq models.Square) {
+	Q.CurrPosition = sq
 }

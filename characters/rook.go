@@ -87,10 +87,14 @@ func (R *Rook) SetID(id int) {
 	R.Id = id
 }
 
-func (R *Rook) GetPrev() models.Square {
-	return *R.Prev
+func (R *Rook) GetPrev() *models.Square {
+	return R.Prev
 }
 
 func (R *Rook) SetPrev(prev *models.Square) {
 	R.Prev = prev
+}
+
+func (R *Rook) HardMove(sq models.Square) {
+	R.CurrPosition = sq
 }

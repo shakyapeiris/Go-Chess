@@ -101,10 +101,14 @@ func (P *Pawn) SetID(id int) {
 	P.Id = id
 }
 
-func (P *Pawn) GetPrev() models.Square {
-	return *P.Prev
+func (P *Pawn) GetPrev() *models.Square {
+	return P.Prev
 }
 
 func (P *Pawn) SetPrev(prev *models.Square) {
 	P.Prev = prev
+}
+
+func (P *Pawn) HardMove(sq models.Square) {
+	P.CurrPosition = sq
 }

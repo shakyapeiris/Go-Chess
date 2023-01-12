@@ -8,6 +8,7 @@ type Piece interface {
 	GetAttackingSquares(board Board) []Square
 	GetID() int
 	SetID(id int)
-	GetPrev() Square
+	GetPrev() *Square
 	SetPrev(sq *Square)
+	HardMove(sq Square)
 }

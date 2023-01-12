@@ -105,10 +105,14 @@ func (B *Bishop) SetID(id int) {
 	B.Id = id
 }
 
-func (B *Bishop) GetPrev() models.Square {
-	return *B.Prev
+func (B *Bishop) GetPrev() *models.Square {
+	return B.Prev
 }
 
 func (B *Bishop) SetPrev(prev *models.Square) {
 	B.Prev = prev
+}
+
+func (B *Bishop) HardMove(sq models.Square) {
+	B.CurrPosition = sq
 }

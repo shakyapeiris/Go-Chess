@@ -93,10 +93,14 @@ func (K *King) SetID(id int) {
 	K.Id = id
 }
 
-func (K *King) GetPrev() models.Square {
-	return *K.Prev
+func (K *King) GetPrev() *models.Square {
+	return K.Prev
 }
 
 func (K *King) SetPrev(prev *models.Square) {
 	K.Prev = prev
+}
+
+func (K *King) HardMove(sq models.Square) {
+	K.CurrPosition = sq
 }
