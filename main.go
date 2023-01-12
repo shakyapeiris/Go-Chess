@@ -26,11 +26,15 @@ func main() {
 		}
 
 		// Validate move
-		err := board.Move(mv)
+		err, status := board.Move(mv)
 
 		if err != nil {
 			fmt.Println(err)
 			continue
+		}
+
+		if status == "End" {
+			break
 		}
 
 		// Give chance to other player

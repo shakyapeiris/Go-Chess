@@ -11,6 +11,7 @@ import (
 
 var board models.Board
 var CurrTurn = "W"
+var history = make([]string, 0)
 
 var whitePieces = []models.Piece{
 	&characters.King{
@@ -98,6 +99,7 @@ var blackPieces = []models.Piece{
 	},
 }
 
+// init: Initialize game
 func init() {
 	// Initialize board
 	for i := 0; i < 8; i++ {
@@ -133,15 +135,14 @@ func init() {
 		board[character.GetPosition()[1]][character.GetPosition()[0]] = character
 		id++
 	}
-
 }
 
 // Move : React to user inputs
-func Move(mv string) error {
+func Move(mv string) (error, string) {
 	move, err := formatInput(mv)
 
 	if err != nil {
-		return err
+		return err, ""
 	}
 	var character = board[move.From[1]][move.From[0]]
 	var newSquare = board[move.To[1]][move.To[0]]
@@ -157,14 +158,14 @@ func Move(mv string) error {
 				newSquare.GetCharacter() == "K"))
 
 	if isInvalidMove {
-		return errors.New("invalid move")
+		return errors.New("invalid move"), ""
 	}
 
 	tempBoard := board
 
 	moveErr := character.Move(move.To, &tempBoard)
 	if moveErr != nil {
-		return moveErr
+		return moveErr, ""
 	}
 
 	var nW, nB []models.Piece
@@ -201,7 +202,7 @@ func Move(mv string) error {
 		if isChecked {
 			character.HardMove(move.From)
 			character.SetPrev(currPrev)
-			return errors.New("[illegal move]: king is checked after the move")
+			return errors.New("[illegal move]: king is checked after the move"), ""
 		}
 
 		// Update previousSquare
@@ -219,11 +220,11 @@ func Move(mv string) error {
 		}
 		if isOpponentKingChecked && !canOppMove {
 			fmt.Println("Check Mate!")
-			return nil
+			return nil, "End"
 		}
 		if !isOpponentKingChecked && !canOppMove {
 			fmt.Println("Stale Mate!")
-			return nil
+			return nil, "End"
 		}
 	} else {
 		// check illegal move
@@ -231,7 +232,7 @@ func Move(mv string) error {
 		if isChecked {
 			character.HardMove(move.From)
 			character.SetPrev(currPrev)
-			return errors.New("[illegal move]: king is checked after the move")
+			return errors.New("[illegal move]: king is checked after the move"), ""
 		}
 
 		// Update previousSquare
@@ -248,20 +249,26 @@ func Move(mv string) error {
 		}
 		if isOpponentKingChecked && !canOppMove {
 			fmt.Println("Check Mate!")
-			return nil
+			return nil, "End"
 		}
 		if !isOpponentKingChecked && !canOppMove {
 			fmt.Println("Stale Mate!")
-			return nil
+			return nil, "End"
 		}
 	}
 
 	// update board
 	board = tempBoard
+	history = append(history, mv)
+
+	if len(history) == 6 && history[len(history)-1] == history[len(history)-5] && history[len(history)-4] == history[len(history)-6] {
+		fmt.Println("Repetition Draw")
+		return nil, "End"
+	}
 
 	PrintBoard()
 
-	return nil
+	return nil, ""
 }
 
 // isKingChecked: Check whether king is checked
