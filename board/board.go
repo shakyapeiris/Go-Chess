@@ -11,7 +11,7 @@ import (
 
 var board models.Board
 var CurrTurn = "W"
-var history = make([]string, 0)
+var history = make([][][]string, 0)
 
 var whitePieces = []models.Piece{
 	&characters.King{
@@ -269,13 +269,34 @@ func Move(mv string) (error, string) {
 
 	// update board
 	board = tempBoard
-	history = append(history, mv)
 
-	if len(history) >= 6 && history[len(history)-1] == history[len(history)-5] && history[len(history)-4] == history[len(history)-6] {
-		fmt.Println("Repetition Draw")
-		return nil, "End"
+	//update history
+	var tempInstance [][]string
+
+	for i := 0; i < 8; i++ {
+		var tr []string
+		for j := 0; j < 8; j++ {
+			tr = append(tr, "")
+		}
+		tempInstance = append(tempInstance, tr)
 	}
 
+	for _, i := range board {
+		for _, j := range i {
+			if j != nil {
+				tempInstance[j.GetPosition()[1]][j.GetPosition()[0]] = j.GetColor() + j.GetCharacter()
+			}
+		}
+	}
+
+	history = append(history, tempInstance)
+
+	if len(history) >= 9 &&
+		areBoardsEqual(history[len(history)-1], history[len(history)-5]) &&
+		areBoardsEqual(history[len(history)-1], history[len(history)-9]) {
+		fmt.Println("Draw by repetition...")
+		return nil, "End"
+	}
 	PrintBoard()
 
 	return nil, ""
@@ -474,4 +495,16 @@ func PrintBoard() {
 		}
 		fmt.Println()
 	}
+}
+
+func areBoardsEqual(board1 [][]string, board2 [][]string) bool {
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			if board1[j][i] != board2[j][i] {
+				return false
+			}
+		}
+	}
+
+	return true
 }
