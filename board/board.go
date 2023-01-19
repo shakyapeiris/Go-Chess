@@ -139,6 +139,11 @@ func init() {
 
 // Move : React to user inputs
 func Move(mv string) (error, string) {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println("[Move]: Invalid move")
+		}
+	}()
 	move, err := formatInput(mv)
 
 	if err != nil {
@@ -497,6 +502,7 @@ func PrintBoard() {
 	}
 }
 
+// areBoardsEqual: Compare two given board instances
 func areBoardsEqual(board1 [][]string, board2 [][]string) bool {
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
