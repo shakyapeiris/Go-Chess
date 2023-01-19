@@ -19,6 +19,6 @@ i.e. `N:a3->b5` (Move knight in a3 square to b5)
  - [x] Check for legal moves
  - [x] Check mate
  - [x] Stale mate
- - [ ] Repetition draw
+ - [x] Repetition draw
  - [ ] Dead draw
  - [ ] Setup a log file
