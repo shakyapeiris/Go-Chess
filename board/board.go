@@ -476,7 +476,12 @@ func getSquare(sq string) (models.Square, error) {
 	dictionary["b"] = 6
 	dictionary["a"] = 7
 
-	x := dictionary[string(sq[0])]
+	x, ok := dictionary[string(sq[0])]
+
+	if !ok {
+		return models.Square{0, 0}, errors.New("invalid move")
+	}
+
 	y, err := strconv.Atoi(string(sq[1]))
 	if err != nil {
 		return models.Square{0, 0}, err
