@@ -15,7 +15,7 @@ i.e. `N:a3->b5` (Move knight in a3 square to b5)
 ## What's implemented upto now
 
  - [x] Format Input
- - [ ] Input validation and error handling
+ - [x] Input validation and error handling
  - [x] Check for legal moves
  - [x] Check mate
  - [x] Stale mate
