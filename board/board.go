@@ -99,6 +99,8 @@ var blackPieces = []models.Piece{
 	},
 }
 
+var formatErr error = nil
+
 // init: Initialize game
 func init() {
 	// Initialize board
@@ -139,12 +141,12 @@ func init() {
 
 // Move : React to user inputs
 func Move(mv string) (error, string) {
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println("[Move]: Invalid move")
-		}
-	}()
 	move, err := formatInput(mv)
+	if formatErr != nil {
+		tE := formatErr
+		formatErr = nil
+		return tE, ""
+	}
 
 	if err != nil {
 		return err, ""
@@ -438,6 +440,11 @@ func copyCharacters(characterArr []models.Piece) []models.Piece {
 // formatInput: Format move input into required format
 func formatInput(mv string) (models.MoveType, error) {
 	// Eg: N:g1 -> f3
+	defer func() {
+		if err := recover(); err != nil {
+			formatErr = errors.New("[invalid move]")
+		}
+	}()
 	mv = strings.Trim(mv, " ")
 
 	// Separate character and move
